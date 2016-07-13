@@ -29,8 +29,6 @@ public class MainActivity extends AppCompatActivity {
 
         Button startButton = (Button) this.findViewById(R.id.button_start);
         final EditText urlEdittext_input= (EditText) this.findViewById(R.id.input_url);
-//        final EditText urlEdittext_output= (EditText) this.findViewById(R.id.output_url);
-
         mMySurfaceView = (MySurfaceView) findViewById(R.id.mySurfaceView);
 
         util=new Util(mMySurfaceView);
@@ -41,23 +39,16 @@ public class MainActivity extends AppCompatActivity {
                 String urltext_input=urlEdittext_input.getText().toString();
                 final String inputurl=folderurl+"/"+urltext_input; //输入文件地址String
 
-//                String urltext_output=urlEdittext_output.getText().toString();
-//                String outputurl=folderurl+"/"+urltext_output;
 
                 Log.d("inputurl",inputurl);
-//                Log.i("outputurl",outputurl);
-//                decode(inputurl,outputurl);
 
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        util.decode(inputurl);
+                        util.decodeToMat(inputurl);
 //                        util.decode("http://download.wavetlan.com/SVV/Media/HTTP/H264/Talkinghead_Media/H264_test1_Talkinghead_mp4_480x360.mp4");
                     }
                 }).start();
-
-//                long address =util.decodeToMat(inputurl);
-
 
             }
         });

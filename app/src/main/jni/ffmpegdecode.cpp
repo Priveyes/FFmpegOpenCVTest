@@ -11,7 +11,6 @@
 #define LOGI(format, ...)  printf("(^_^) " format "\n", ##__VA_ARGS__)
 #endif
 
-
 ffmpegDecode :: ~ffmpegDecode()
 {
     pCvMat->release();
@@ -39,13 +38,15 @@ ffmpegDecode :: ffmpegDecode(char * file)
     y_size = 0;
     packet = NULL;
 
-    if (NULL == file){
+    if (NULL == file)
+    {
         filepath =  "opencv.h264";
     }
-    else{
+    else
+    {
         filepath = file;
     }
-
+    skippedFramesNum=0; // 跳过的帧数
     init();
     openDecode();
     prepare();
@@ -66,7 +67,7 @@ void ffmpegDecode :: init()
     if(avformat_open_input(&pFormatCtx,filepath,NULL,NULL)!=0)
     {
         LOGE("cannot open the files.\n");
-        printf("无法打开文件\n");
+
         return;
     }
 
@@ -98,6 +99,7 @@ void ffmpegDecode :: openDecode()
     }
     pCodecCtx=pFormatCtx->streams[videoindex]->codec;
 
+
     //在库里面查找支持该格式的解码器
     pCodec=avcodec_find_decoder(pCodecCtx->codec_id);
     if(pCodec==NULL)
@@ -119,17 +121,23 @@ void ffmpegDecode :: prepare()
     //分配一个帧指针，指向解码后的原始帧
     pAvFrame=av_frame_alloc(); // avcodec_alloc_frame -->  av_frame_alloc()
     y_size = pCodecCtx->width * pCodecCtx->height;
+
     //分配帧内存
     packet=(AVPacket *)av_malloc(sizeof(AVPacket));
     av_new_packet(packet, y_size);
 
-    m_avg_frame_rate=pFormatCtx->streams[videoindex]->avg_frame_rate;
+    m_video_avg_frame_rate=pFormatCtx->streams[videoindex]->avg_frame_rate; //赋值给平均帧率 !!!
 
 
     //输出一下信息-----------------------------
     printf("file information-----------------------------------------\n");
+    //av_dump_format只是个调试函数，输出文件的音、视频流的基本信息了，帧率、分辨率、音频采样等等。
     av_dump_format(pFormatCtx,0,filepath,0);
-    //av_dump_format只是个调试函数，输出文件的音、视频流的基本信息了，帧率、分辨率、音频采样等等
+
+    printf("avg_frame_rate.num-----> %d \n",pFormatCtx->streams[videoindex]->avg_frame_rate.num);  //avg_frame_rate：Average framerate  类型：AVRational 有理数 numerator/denominator
+    printf("streams[videoindex] time_base  %d/ %d \n",pFormatCtx->streams[videoindex]->time_base.num,pFormatCtx->streams[videoindex]->time_base.den);
+    printf(" time_base  %d/ %d \n",pCodecCtx->time_base.num,pCodecCtx->time_base.den);
+
     printf("-------------------------------------------------\n");
 }
 
@@ -137,30 +145,48 @@ void ffmpegDecode :: prepare()
 int ffmpegDecode :: readOneFrame()
 {
     int result = 0;
+
+    //av_read_frame()读取一个包并且把它保存到AVPacket结构体中。这些数据可以在后面通过av_free_packet()来释放。
     result = av_read_frame(pFormatCtx, packet);
     printf("result:%d \n",result);
     return result;
 }
 
-cv::Mat ffmpegDecode :: getDecodedFrame()
+AVRational ffmpegDecode::getAvg_frame_rate() const
 {
+    return m_video_avg_frame_rate;
+}
+int ffmpegDecode::getSkippedFramesNum() const
+{
+    return skippedFramesNum;
+}
+
+
+
+
+cv::Mat ffmpegDecode :: getDecodedFrame(){
     bool isVideo=false;
-    if(packet->stream_index==videoindex)
-    {
+
+    //是视频的Packet
+    if(packet->stream_index==videoindex){
         isVideo=true;
-        //解码一个帧
-        ret = avcodec_decode_video2(pCodecCtx, pAvFrame, &got_picture, packet);
-        if(ret < 0)
-        {
+
+        printf("dts %lld   pts %lld \n",packet->dts,packet->pts); //每一个packet中都有
+
+        //函数avcodec_decode_video()把包转换为帧。
+        //然而当解码一个包的时候，我们可能没有得到我们需要的关于帧的信息。
+       ret = avcodec_decode_video2(pCodecCtx, pAvFrame, &got_picture, packet);
+        if(ret < 0){
             LOGE("decode error.\n");
-            printf("decode error \n");
+
             return cv::Mat();
         }
-        if(got_picture)
-        {
+
+        if(got_picture){
             //根据编码信息设置渲染格式
             if(img_convert_ctx == NULL){
-                img_convert_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height,pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height,
+                img_convert_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height,
+                    pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height,
                     AV_PIX_FMT_BGR24, SWS_BICUBIC, NULL, NULL, NULL);
             }
             //----------------------opencv
@@ -171,31 +197,32 @@ cv::Mat ffmpegDecode :: getDecodedFrame()
             if(img_convert_ctx != NULL){
                 get(pCodecCtx, img_convert_ctx, pAvFrame);
             }
+        }else{
+            skippedFramesNum++;
         }
     }
     av_free_packet(packet);
     if(!isVideo){
-            return emptyMat;
-        }
-
+        return emptyMat;
+    }
     return *pCvMat;
 }
 
 cv::Mat ffmpegDecode :: getLastFrame()
 {
     ret = avcodec_decode_video2(pCodecCtx, pAvFrame, &got_picture, packet);
-    if(got_picture)
-    {
-        //根据编码信息设置渲染格式  PIX_FMT_RGB24 --> AV_PIX_FMT_RGB24
-        img_convert_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height,  AV_PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL);
 
-        if(img_convert_ctx != NULL)
-        {
+    if(got_picture){
+        //根据编码信息设置渲染格式  PIX_FMT_RGB24 --> AV_PIX_FMT_RGB24
+        img_convert_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height,  AV_PIX_FMT_BGR24, SWS_BICUBIC, NULL, NULL, NULL);
+
+        if(img_convert_ctx != NULL){
             get(pCodecCtx, img_convert_ctx,pAvFrame);
         }
     }
     return *pCvMat;
 }
+
 
 void ffmpegDecode :: get(AVCodecContext * pCodecCtx, SwsContext * img_convert_ctx, AVFrame * pFrame)
 {
@@ -203,6 +230,7 @@ void ffmpegDecode :: get(AVCodecContext * pCodecCtx, SwsContext * img_convert_ct
     {
         pCvMat->create(cv::Size(pCodecCtx->width, pCodecCtx->height),CV_8UC3);
     }
+
     AVFrame    *pFrameRGB = NULL;
     uint8_t  *out_bufferRGB = NULL;
     pFrameRGB = av_frame_alloc(); // avcodec_alloc_frame -->  av_frame_alloc()
@@ -215,13 +243,8 @@ void ffmpegDecode :: get(AVCodecContext * pCodecCtx, SwsContext * img_convert_ct
     //YUV to RGB
     sws_scale(img_convert_ctx, pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameRGB->data, pFrameRGB->linesize);
 
-    memcpy(pCvMat->data,out_bufferRGB,size);
+    memcpy(pCvMat->data,out_bufferRGB,size);//copy 数据到pCvMat
 
     delete[] out_bufferRGB;
     av_free(pFrameRGB);
-}
-
-AVRational ffmpegDecode::getAvg_frame_rate() const
-{
-    return m_avg_frame_rate;
 }

@@ -36,7 +36,8 @@ public class Util {
         mMySurfaceView=mySurfaceView;
     }
 
-    public void display(long address){
+    //解码完成一帧后的回调
+    public void display(long address,int delayTime){
 //        Log.d(TAG, "" + address);//地址是固定的
 //        Log.d(TAG, frameMat.toString());//地址是固定的
         if (isFirstStart){
@@ -47,27 +48,26 @@ public class Util {
         }
         //Mat to Bitmap,  显示
 //        Log.d(TAG, "" +frameMat.width()+frameMat.height());
-        if(frameMat.width()>0 && frameMat.height()>0 && (!frameMat.empty()) ){
+        if(!frameMat.empty()){
 
             Utils.matToBitmap(frameMat,bitmap);  //准确的话应该每40ms调用一次  15:11:19.330   15:10:53.876
-            Log.d(TAG, "mMySurfaceView.setBitmap" );//地址是固定的
+            Log.d(TAG, "mMySurfaceView.setBitmap" );
+            Log.d(TAG, ""+delayTime );
 
             try {
-                Thread.sleep(40);
+                Thread.sleep(delayTime);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
 
     }
-    public void decode(String inputurl){
-        long address=decodeToMat(inputurl);
-    }
+
     public void test(long address){
         Log.d(TAG, "" + address);
     }
 
-    public native long decodeToMat(String inputurl);
+    public native void decodeToMat(String inputurl);
 
 
 }

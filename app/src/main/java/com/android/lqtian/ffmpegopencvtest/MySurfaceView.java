@@ -32,12 +32,14 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
         @Override
         public void run() {
             while (ThreadFlag) {
+
                 // 锁定画布，得到Canvas对象
                 canvas = sfh.lockCanvas();
                 canvas.drawColor(Color.WHITE);
-                if(mBitmap!=null)
-                    canvas.drawBitmap(mBitmap,0,0,null);
-
+                if(mBitmap!=null) {
+//                    Log.d(TAG, "MySurfaceView   drawBitmap!!!");// 16ms的间隔时间
+                    canvas.drawBitmap(mBitmap, 0, 0, null);
+                }
                 if (canvas != null) {
                     // 解除锁定，并提交修改内容，更新屏幕
                     sfh.unlockCanvasAndPost(canvas);

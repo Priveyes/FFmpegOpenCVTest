@@ -16,7 +16,7 @@ extern "C" {    //必须加入extern "C"才能成功，暂时未知为何
  * Method:    decodeToMat
  * Signature: (Ljava/lang/String;J)I
  */
-JNIEXPORT jlong JNICALL Java_com_android_lqtian_ffmpegopencvtest_Util_decodeToMat  (JNIEnv *, jobject, jstring);
+JNIEXPORT void JNICALL Java_com_android_lqtian_ffmpegopencvtest_Util_decodeToMat  (JNIEnv *, jobject, jstring);
 
 
 #ifdef __cplusplus
