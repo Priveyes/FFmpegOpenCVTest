@@ -4,10 +4,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
+import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -15,14 +16,18 @@ import android.view.SurfaceView;
  * Created by Administrator on 2016/7/5.
  */
 
-public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback {
+public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback,GestureDetector.OnGestureListener{
     private String TAG = "MySurfaceView";
 
-    private SurfaceHolder sfh;
+    private SurfaceHolder mSurfaceHolder;
     private boolean ThreadFlag;
     private int counter;
     private Canvas canvas;
     private Bitmap mBitmap;
+
+    private GestureDetectorCompat mDetector;
+    private int zeroPointPosX=0;
+    private int zeroPointPosY=0;
 
     public void setBitmap(Bitmap bitmap) {
         mBitmap = bitmap;
@@ -34,15 +39,15 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
             while (ThreadFlag) {
 
                 // 锁定画布，得到Canvas对象
-                canvas = sfh.lockCanvas();
+                canvas = mSurfaceHolder.lockCanvas();
                 canvas.drawColor(Color.WHITE);
                 if(mBitmap!=null) {
 //                    Log.d(TAG, "MySurfaceView   drawBitmap!!!");// 16ms的间隔时间
-                    canvas.drawBitmap(mBitmap, 0, 0, null);
+                    canvas.drawBitmap(mBitmap, zeroPointPosX, zeroPointPosY, null);
                 }
                 if (canvas != null) {
                     // 解除锁定，并提交修改内容，更新屏幕
-                    sfh.unlockCanvasAndPost(canvas);
+                    mSurfaceHolder.unlockCanvasAndPost(canvas);
                 }
 //                try {
 //                    Thread.sleep(30);
@@ -57,33 +62,33 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
     public MySurfaceView(Context context) {
         super(context);
         // 通过SurfaceView获得SurfaceHolder对象
-        sfh = this.getHolder();
+        mSurfaceHolder = this.getHolder();
         // 为SurfaceHolder添加回调结构SurfaceHolder.Callback
-        sfh.addCallback(this);
+        mSurfaceHolder.addCallback(this);
     }
 
     public MySurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
         // 通过SurfaceView获得SurfaceHolder对象
-        sfh = this.getHolder();
+        mSurfaceHolder = this.getHolder();
         // 为SurfaceHolder添加回调结构SurfaceHolder.Callback
-        sfh.addCallback(this);
+        mSurfaceHolder.addCallback(this);
     }
 
     public MySurfaceView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         // 通过SurfaceView获得SurfaceHolder对象
-        sfh = this.getHolder();
+        mSurfaceHolder = this.getHolder();
         // 为SurfaceHolder添加回调结构SurfaceHolder.Callback
-        sfh.addCallback(this);
+        mSurfaceHolder.addCallback(this);
     }
 
     public MySurfaceView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         // 通过SurfaceView获得SurfaceHolder对象
-        sfh = this.getHolder();
+        mSurfaceHolder = this.getHolder();
         // 为SurfaceHolder添加回调结构SurfaceHolder.Callback
-        sfh.addCallback(this);
+        mSurfaceHolder.addCallback(this);
     }
 
     //Callback带来的接口
@@ -99,6 +104,7 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
         Log.i(TAG, "surfaceCreated");
         counter = 0;
         ThreadFlag = true;
+        mDetector = new GestureDetectorCompat(this.getContext(),this);
         mThread.start();
     }
 
@@ -109,4 +115,43 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
         ThreadFlag = false;
     }
 
+
+    //OnGestureListener
+    @Override
+    public boolean onDown(MotionEvent motionEvent) {
+        Log.d(TAG,"onDown ");
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent motionEvent) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent motionEvent) {
+        Log.d(TAG,"onLongPress ");
+    }
+
+    @Override
+    public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+        Log.d(TAG,"onFling ");
+        return false;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        mDetector.onTouchEvent(event);
+        return super.onTouchEvent(event);
+    }
 }

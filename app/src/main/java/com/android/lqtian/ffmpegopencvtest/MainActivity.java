@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         util.decodeToMat(inputurl);
-//                        util.decode("http://download.wavetlan.com/SVV/Media/HTTP/H264/Talkinghead_Media/H264_test1_Talkinghead_mp4_480x360.mp4");
+//                        util.decodeToMat("http://download.wavetlan.com/SVV/Media/HTTP/H264/Talkinghead_Media/H264_test1_Talkinghead_mp4_480x360.mp4");
                     }
                 }).start();
 

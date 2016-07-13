@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,24 +8,25 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:orientation="vertical"
     tools:context="com.android.lqtian.ffmpegopencvtest.MainActivity">
 
+    <com.android.lqtian.ffmpegopencvtest.MySurfaceView
+        android:id="@+id/mySurfaceView"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"/>
 
     <TextView
         android:id="@+id/text_label1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
         android:text="Input Bitstream" />
 
     <EditText
         android:id="@+id/input_url"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/text_label1"
-        android:layout_below="@+id/text_label1"
-        android:ems="100"
+       android:ems="100"
         android:inputType="textUri"
         android:text="sintel.mp4"
         android:textColor="#ff8c00" >
@@ -33,42 +34,16 @@
         <requestFocus />
     </EditText>
 
-    <TextView
-        android:id="@+id/text_label2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/input_url"
-        android:layout_below="@+id/input_url"
-        android:text="Output Raw YUV" />
-
-    <EditText
-        android:id="@+id/output_url"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/text_label2"
-        android:layout_below="@+id/text_label2"
-        android:ems="100"
-        android:inputType="textUri"
-        android:text="sintel.yuv"
-        android:textColor="#ff8c00" >
-
-    </EditText>
-
     <Button
         android:id="@+id/button_start"
         style="?android:attr/buttonStyleSmall"
+        android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/output_url"
-        android:layout_below="@+id/output_url"
         android:text="Start" />
 
-    <com.android.lqtian.ffmpegopencvtest.MySurfaceView
-        android:id="@+id/mySurfaceView"
-        android:layout_below="@+id/button_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
 
 
 
-</RelativeLayout>
+
+</LinearLayout>

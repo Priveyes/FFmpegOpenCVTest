@@ -161,9 +161,6 @@ int ffmpegDecode::getSkippedFramesNum() const
     return skippedFramesNum;
 }
 
-
-
-
 cv::Mat ffmpegDecode :: getDecodedFrame(){
     bool isVideo=false;
 

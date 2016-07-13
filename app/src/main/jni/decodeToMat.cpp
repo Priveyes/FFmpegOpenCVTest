@@ -44,25 +44,27 @@ JNIEXPORT void JNICALL Java_com_android_lqtian_ffmpegopencvtest_Util_decodeToMat
     int waitTime;
 
     jclass util=  env->GetObjectClass(obj); //获取util的类，才能继续获取方法
-    jmethodID methodId= env->GetMethodID(util,"display","(JI)V");
+    jmethodID methodId= env->GetMethodID(util,"display","(J)V");
 
     int frame=0;
     while(ffmpegDecodeObject.readOneFrame()>=0){ //读取一帧
             imgMat=ffmpegDecodeObject.getDecodedFrame(); //解码获得Mat，Mat未必非空，不断调用直到非空就有结果。
 
             if (!imgMat.empty()){
+            /*
             time_finish= clock();
             time_duration=(time_finish - time_start);
             waitTime=frame_rate_mils-time_duration;
             if(waitTime<0){
                 waitTime=0;
-            }
+            }*/
             //todo
                cvtColor(imgMat, imgMatRGB, CV_BGR2RGB); //安卓中的bitmap使用的是RGB。处理完Mat以后进行转换再返回。
+               //resize(imgMatRGB,imgMatRGB,cv::Size(900,500));
                LOGI("CallVoidMethod.   frame:%d",frame++);  //17ms
 
-               env->CallVoidMethod(obj,methodId,(jlong)&imgMatRGB,waitTime);
-               time_start=clock();
+               env->CallVoidMethod(obj,methodId,(jlong)&imgMatRGB);
+               //time_start=clock();
             }
         }
         LOGI("FIX: Flush Frames remained in Codec。   %d",ffmpegDecodeObject.getSkippedFramesNum());
@@ -71,6 +73,7 @@ JNIEXPORT void JNICALL Java_com_android_lqtian_ffmpegopencvtest_Util_decodeToMat
                 if (!imgMat.empty()){
                     //todo
                     cvtColor(imgMat, imgMatRGB, CV_BGR2RGB); //安卓中的bitmap使用的是RGB。处理完Mat以后进行转换再返回。
+
                     LOGI("readOneFrame call.   %d",frame++);
                     env->CallVoidMethod(obj,methodId,(jlong)&imgMatRGB);
                  }

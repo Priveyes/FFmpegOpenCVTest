@@ -31,17 +31,22 @@ public class Util {
     Bitmap bitmap;
     private boolean isFirstStart=true;
 
+    long startTime;
+    long endTime;
+    long durationTime;
+    long sleepTime;
 
     public Util(MySurfaceView mySurfaceView) {
         mMySurfaceView=mySurfaceView;
     }
 
     //解码完成一帧后的回调
-    public void display(long address,int delayTime){
+    public void display(long address){
 //        Log.d(TAG, "" + address);//地址是固定的
 //        Log.d(TAG, frameMat.toString());//地址是固定的
+        frameMat = new Mat(address);
         if (isFirstStart){
-            frameMat = new Mat(address);
+
             bitmap= Bitmap.createBitmap(frameMat.width(),frameMat.height(), Bitmap.Config.RGB_565);
             mMySurfaceView.setBitmap(bitmap);
             isFirstStart=false;
@@ -50,21 +55,27 @@ public class Util {
 //        Log.d(TAG, "" +frameMat.width()+frameMat.height());
         if(!frameMat.empty()){
 
-            Utils.matToBitmap(frameMat,bitmap);  //准确的话应该每40ms调用一次  15:11:19.330   15:10:53.876
+            Utils.matToBitmap(frameMat,bitmap);  //准确的话应该每40ms调用完一次
             Log.d(TAG, "mMySurfaceView.setBitmap" );
-            Log.d(TAG, ""+delayTime );
-
-            try {
-                Thread.sleep(delayTime);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            endTime=System.currentTimeMillis();
+            durationTime=endTime-startTime;
+            sleepTime=40-durationTime;
+            if(sleepTime<0){
+                sleepTime=0;
+            }else{
+                //延时
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+
+            Log.d(TAG, "sleepTime :"+sleepTime );
+
+            startTime=System.currentTimeMillis();
         }
 
-    }
-
-    public void test(long address){
-        Log.d(TAG, "" + address);
     }
 
     public native void decodeToMat(String inputurl);
