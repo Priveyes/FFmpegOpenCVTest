@@ -34,6 +34,7 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
             while (ThreadFlag) {
                 // 锁定画布，得到Canvas对象
                 canvas = sfh.lockCanvas();
+                canvas.drawColor(Color.WHITE);
                 if(mBitmap!=null)
                     canvas.drawBitmap(mBitmap,0,0,null);
 

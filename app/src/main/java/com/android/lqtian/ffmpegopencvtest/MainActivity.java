@@ -19,7 +19,6 @@ public class MainActivity extends AppCompatActivity {
     //JNI
 //    public native int decode(String inputurl, String outputurl);
 
-    ImageView mImageView;
     MySurfaceView mMySurfaceView;
     Util util;
     @Override
@@ -32,10 +31,9 @@ public class MainActivity extends AppCompatActivity {
         final EditText urlEdittext_input= (EditText) this.findViewById(R.id.input_url);
 //        final EditText urlEdittext_output= (EditText) this.findViewById(R.id.output_url);
 
-        mImageView = (ImageView) findViewById(R.id.imageView);
         mMySurfaceView = (MySurfaceView) findViewById(R.id.mySurfaceView);
 
-        util=new Util(mImageView,mMySurfaceView);
+        util=new Util(mMySurfaceView);
 
         startButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0){
@@ -54,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         util.decode(inputurl);
+//                        util.decode("http://download.wavetlan.com/SVV/Media/HTTP/H264/Talkinghead_Media/H264_test1_Talkinghead_mp4_480x360.mp4");
                     }
                 }).start();
 

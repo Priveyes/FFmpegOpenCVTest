@@ -123,6 +123,9 @@ void ffmpegDecode :: prepare()
     packet=(AVPacket *)av_malloc(sizeof(AVPacket));
     av_new_packet(packet, y_size);
 
+    m_avg_frame_rate=pFormatCtx->streams[videoindex]->avg_frame_rate;
+
+
     //输出一下信息-----------------------------
     printf("file information-----------------------------------------\n");
     av_dump_format(pFormatCtx,0,filepath,0);
@@ -141,8 +144,10 @@ int ffmpegDecode :: readOneFrame()
 
 cv::Mat ffmpegDecode :: getDecodedFrame()
 {
+    bool isVideo=false;
     if(packet->stream_index==videoindex)
     {
+        isVideo=true;
         //解码一个帧
         ret = avcodec_decode_video2(pCodecCtx, pAvFrame, &got_picture, packet);
         if(ret < 0)
@@ -162,7 +167,6 @@ cv::Mat ffmpegDecode :: getDecodedFrame()
             if (pCvMat->empty()){
                 pCvMat->create(cv::Size(pCodecCtx->width, pCodecCtx->height),CV_8UC3);
                 LOGI("pCodecCtx-> %d,%d.\n",pCodecCtx->width,pCodecCtx->height);//测试宽高
-
             }
             if(img_convert_ctx != NULL){
                 get(pCodecCtx, img_convert_ctx, pAvFrame);
@@ -170,6 +174,10 @@ cv::Mat ffmpegDecode :: getDecodedFrame()
         }
     }
     av_free_packet(packet);
+    if(!isVideo){
+            return emptyMat;
+        }
+
     return *pCvMat;
 }
 
@@ -195,7 +203,6 @@ void ffmpegDecode :: get(AVCodecContext * pCodecCtx, SwsContext * img_convert_ct
     {
         pCvMat->create(cv::Size(pCodecCtx->width, pCodecCtx->height),CV_8UC3);
     }
-
     AVFrame    *pFrameRGB = NULL;
     uint8_t  *out_bufferRGB = NULL;
     pFrameRGB = av_frame_alloc(); // avcodec_alloc_frame -->  av_frame_alloc()
@@ -212,4 +219,9 @@ void ffmpegDecode :: get(AVCodecContext * pCodecCtx, SwsContext * img_convert_ct
 
     delete[] out_bufferRGB;
     av_free(pFrameRGB);
+}
+
+AVRational ffmpegDecode::getAvg_frame_rate() const
+{
+    return m_avg_frame_rate;
 }

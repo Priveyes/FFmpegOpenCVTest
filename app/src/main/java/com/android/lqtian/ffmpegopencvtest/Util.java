@@ -26,28 +26,34 @@ public class Util {
         System.loadLibrary("opencv_java3");
         System.loadLibrary("decodeToMat");
     }
-    ImageView mImageView; //
     Mat frameMat;
     MySurfaceView mMySurfaceView;
-    public Util(ImageView imageView,MySurfaceView mySurfaceView) {
-        mImageView = imageView;
+    Bitmap bitmap;
+    private boolean isFirstStart=true;
+
+
+    public Util(MySurfaceView mySurfaceView) {
         mMySurfaceView=mySurfaceView;
     }
 
     public void display(long address){
-        frameMat = new Mat(address);
-//        Log.d(TAG, "" + address);
-//        Log.d(TAG, frameMat.toString());
-
-        //Mat to Bitmap,  显示
-        Log.d(TAG, "" +frameMat.width()+frameMat.height() );
-        if(frameMat.width()>0 && frameMat.height()>0 && (!frameMat.empty()) ){
-            Bitmap bitmap= Bitmap.createBitmap(frameMat.width(),frameMat.height(), Bitmap.Config.RGB_565);
-            Utils.matToBitmap(frameMat,bitmap);    // OpenCV Error: Assertion failed (src.dims == 2 && info.height == (uint32_t)src.rows && info.width == (uint32_t)src.cols)
-//            mImageView.setImageBitmap(bitmap);
+//        Log.d(TAG, "" + address);//地址是固定的
+//        Log.d(TAG, frameMat.toString());//地址是固定的
+        if (isFirstStart){
+            frameMat = new Mat(address);
+            bitmap= Bitmap.createBitmap(frameMat.width(),frameMat.height(), Bitmap.Config.RGB_565);
             mMySurfaceView.setBitmap(bitmap);
+            isFirstStart=false;
+        }
+        //Mat to Bitmap,  显示
+//        Log.d(TAG, "" +frameMat.width()+frameMat.height());
+        if(frameMat.width()>0 && frameMat.height()>0 && (!frameMat.empty()) ){
+
+            Utils.matToBitmap(frameMat,bitmap);  //准确的话应该每40ms调用一次  15:11:19.330   15:10:53.876
+            Log.d(TAG, "mMySurfaceView.setBitmap" );//地址是固定的
+
             try {
-                Thread.sleep(30);
+                Thread.sleep(40);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -55,9 +61,7 @@ public class Util {
 
     }
     public void decode(String inputurl){
-
         long address=decodeToMat(inputurl);
-
     }
     public void test(long address){
         Log.d(TAG, "" + address);

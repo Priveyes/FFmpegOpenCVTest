@@ -27,10 +27,13 @@ extern "C" {
 JNIEXPORT jlong JNICALL Java_com_android_lqtian_ffmpegopencvtest_Util_decodeToMat  (JNIEnv *env, jobject obj, jstring input_jstr){//obj是调用此方法的对象
     //init
     cv::Mat imgMat;
-    cv::Mat *matReturn=new cv::Mat();  // ffmpeg 渲染的格式为 AV_PIX_FMT_BGR24  < packed RGB 8:8:8, 24bpp, BGRBGR...
+    cv::Mat imgMatRGB;
+    //cv::Mat *matReturn=new cv::Mat();  // ffmpeg 渲染的格式为 AV_PIX_FMT_BGR24  < packed RGB 8:8:8, 24bpp, BGRBGR...
     char input_str[500]={0};
     sprintf(input_str,"%s",env->GetStringUTFChars(input_jstr, NULL));
     ffmpegDecode ffmpegDecodeObject(input_str);//解码对象
+
+    int frameRate=ffmpegDecodeObject.getAvg_frame_rate().num;
 
     jclass util=  env->GetObjectClass(obj); //获取util的类，才能继续获取方法
     jmethodID methodId= env->GetMethodID(util,"display","(J)V");
@@ -41,13 +44,14 @@ JNIEXPORT jlong JNICALL Java_com_android_lqtian_ffmpegopencvtest_Util_decodeToMa
 
             if (!imgMat.empty()&&(imgMat.rows>0)){
                //imgMat.copyTo(*matReturn);
-               cvtColor(imgMat, imgMat, CV_BGR2RGB); //安卓中的bitmap使用的是RGB。处理完Mat以后进行转换再返回。
+               cvtColor(imgMat, imgMatRGB, CV_BGR2RGB); //安卓中的bitmap使用的是RGB。处理完Mat以后进行转换再返回。
 
-                LOGI("readOneFrame call.   %d",i++);   //195
-                env->CallVoidMethod(obj,methodId,(jlong)&imgMat);
+                LOGI("readOneFrame call.   %d",i++);
 
+                //考虑帧率：应该每隔40ms更新一次
+                env->CallVoidMethod(obj,methodId,(jlong)&imgMatRGB);
             }
         }
-    return (jlong) matReturn;
+    return (jlong) &imgMatRGB;
 }
 

@@ -3,6 +3,7 @@
 
 #include <opencv2/core/core.hpp>
 
+
 extern "C"
 {
 #include "libavcodec/avcodec.h"
@@ -10,6 +11,8 @@ extern "C"
 //图像转换结构需要引入的头文件
 #include "libswscale/swscale.h"
 };
+
+
 
 class ffmpegDecode
 {
@@ -22,6 +25,12 @@ public:
     int readOneFrame();
     int getFrameInterval();
 
+    AVRational getAvg_frame_rate() const;
+
+
+
+    int getSkippedFramesNum() const;
+
 private:
     AVFrame    *pAvFrame;
     AVFormatContext    *pFormatCtx;
@@ -31,13 +40,16 @@ private:
     int i;
     int videoindex;
 
-    char *filepath;
+    char *filepath;  //文件路径
     int ret, got_picture;
     SwsContext *img_convert_ctx;
     int y_size;
     AVPacket *packet;
 
+    AVRational m_video_avg_frame_rate; //平均帧率  add by lqt
+    int skippedFramesNum; //跳过的帧数
     cv::Mat *pCvMat;
+    cv::Mat emptyMat;
 
     void init();
     void openDecode();
