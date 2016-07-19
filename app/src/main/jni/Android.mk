@@ -59,7 +59,9 @@ include $(BUILD_SHARED_LIBRARY)
 
 
 include$(CLEAR_VARS)
+OPENCV_LIB_TYPE=STATIC
 include C:/library/OpenCV-android-sdk/sdk/native/jni/OpenCV.mk
+
 LOCAL_MODULE := decodeToMat
 LOCAL_MODULE_FILENAME:=libdecodeToMat
 LOCAL_SRC_FILES :=decodeToMat.cpp ffmpegdecode.cpp

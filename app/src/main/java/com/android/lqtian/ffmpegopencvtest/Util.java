@@ -1,6 +1,7 @@
 package com.android.lqtian.ffmpegopencvtest;
 
 import android.graphics.Bitmap;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -36,17 +37,21 @@ public class Util {
     long durationTime;
     long sleepTime;
 
+    long startTime_fps=0;
+    long endTime_fps=0;
+    long durationTime_fps=0;
+
     public Util(MySurfaceView mySurfaceView) {
         mMySurfaceView=mySurfaceView;
     }
 
     //解码完成一帧后的回调
-    public void display(long address){
+    public void display(long address,int frame_rate_mils){
 //        Log.d(TAG, "" + address);//地址是固定的
 //        Log.d(TAG, frameMat.toString());//地址是固定的
+//        Log.d(TAG, "frame_rate mils"+frame_rate_mils);
         frameMat = new Mat(address);
         if (isFirstStart){
-
             bitmap= Bitmap.createBitmap(frameMat.width(),frameMat.height(), Bitmap.Config.RGB_565);
             mMySurfaceView.setBitmap(bitmap);
             isFirstStart=false;
@@ -54,15 +59,18 @@ public class Util {
         //Mat to Bitmap,  显示
 //        Log.d(TAG, "" +frameMat.width()+frameMat.height());
         if(!frameMat.empty()){
-
             Utils.matToBitmap(frameMat,bitmap);  //准确的话应该每40ms调用完一次
-            Log.d(TAG, "mMySurfaceView.setBitmap" );
-            endTime=System.currentTimeMillis();
-            durationTime=endTime-startTime;
-            sleepTime=40-durationTime;
-            if(sleepTime<0){
-                sleepTime=0;
-            }else{
+            mMySurfaceView.setBitmapUpdated(true);
+            //计算两次完成bitmap更新的时间间隔：durationTime_fps
+            durationTime_fps= System.currentTimeMillis()-startTime_fps;
+            startTime_fps=System.currentTimeMillis();
+            float fps=1000f/durationTime_fps;
+            Log.d(TAG, "frame rate:"+fps);
+
+            endTime=System.currentTimeMillis();//结束计时
+            durationTime=endTime-startTime; //startTime是上次延时完的时间。
+            sleepTime=frame_rate_mils-durationTime;//计算应该延时的时间
+            if(sleepTime>0){  //大于0才应该延时
                 //延时
                 try {
                     Thread.sleep(sleepTime);
@@ -70,10 +78,9 @@ public class Util {
                     e.printStackTrace();
                 }
             }
-
             Log.d(TAG, "sleepTime :"+sleepTime );
 
-            startTime=System.currentTimeMillis();
+            startTime=System.currentTimeMillis();//开始计时
         }
 
     }

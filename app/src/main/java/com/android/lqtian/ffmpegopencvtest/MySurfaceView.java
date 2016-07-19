@@ -21,7 +21,6 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
 
     private SurfaceHolder mSurfaceHolder;
     private boolean ThreadFlag;
-    private int counter;
     private Canvas canvas;
     private Bitmap mBitmap;
 
@@ -33,6 +32,12 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
         mBitmap = bitmap;
     }
 
+    public void setBitmapUpdated(boolean bitmapUpdated) {
+        isBitmapUpdated = bitmapUpdated;
+    }
+
+    private boolean isBitmapUpdated=true;
+
     private Thread mThread = new Thread(new Runnable() {
         @Override
         public void run() {
@@ -41,16 +46,21 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
                 // 锁定画布，得到Canvas对象
                 canvas = mSurfaceHolder.lockCanvas();
                 canvas.drawColor(Color.WHITE);
+                //等待bitmap更新的模式
+                while(!isBitmapUpdated){
+                }
+
                 if(mBitmap!=null) {
-//                    Log.d(TAG, "MySurfaceView   drawBitmap!!!");// 16ms的间隔时间
                     canvas.drawBitmap(mBitmap, zeroPointPosX, zeroPointPosY, null);
+                    Log.d(TAG, "MySurfaceView   drawBitmap!!!");// 16ms的间隔时间
+                    isBitmapUpdated=false;
                 }
                 if (canvas != null) {
                     // 解除锁定，并提交修改内容，更新屏幕
                     mSurfaceHolder.unlockCanvasAndPost(canvas);
                 }
 //                try {
-//                    Thread.sleep(30);
+//                    Thread.sleep(40);
 //                } catch (InterruptedException e) {
 //                    e.printStackTrace();
 //                }
@@ -102,7 +112,6 @@ public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback
     public void surfaceCreated(SurfaceHolder holder) {
         // TODO Auto-generated method stub
         Log.i(TAG, "surfaceCreated");
-        counter = 0;
         ThreadFlag = true;
         mDetector = new GestureDetectorCompat(this.getContext(),this);
         mThread.start();
