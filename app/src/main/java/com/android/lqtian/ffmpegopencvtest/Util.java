@@ -38,11 +38,15 @@ public class Util {
     long sleepTime;
 
     long startTime_fps=0;
-    long endTime_fps=0;
     long durationTime_fps=0;
+
+    FishAPI fishAPI;
+    Mat dest;
 
     public Util(MySurfaceView mySurfaceView) {
         mMySurfaceView=mySurfaceView;
+        dest = new Mat();
+        fishAPI = new FishAPI();
     }
 
     //解码完成一帧后的回调
@@ -52,15 +56,26 @@ public class Util {
 //        Log.d(TAG, "frame_rate mils"+frame_rate_mils);
         frameMat = new Mat(address);
         if (isFirstStart){
-            bitmap= Bitmap.createBitmap(frameMat.width(),frameMat.height(), Bitmap.Config.RGB_565);
-            mMySurfaceView.setBitmap(bitmap);
+            //显示原图的程序
+//            bitmap= Bitmap.createBitmap(frameMat.width(),frameMat.height(), Bitmap.Config.RGB_565);
+//            mMySurfaceView.setBitmap(bitmap);
             isFirstStart=false;
+
+            //unfold
+            fishAPI.initUnfoldParam(frameMat.getNativeObjAddr(),dest.getNativeObjAddr());//test
+            Log.d(TAG,dest.width()+" "+dest.height()); // 427 136
+            bitmap= Bitmap.createBitmap(dest.width(),dest.height(), Bitmap.Config.RGB_565);
+            mMySurfaceView.setBitmap(bitmap);
+
         }
         //Mat to Bitmap,  显示
 //        Log.d(TAG, "" +frameMat.width()+frameMat.height());
         if(!frameMat.empty()){
-            Utils.matToBitmap(frameMat,bitmap);  //准确的话应该每40ms调用完一次
+            fishAPI.unfold(frameMat.getNativeObjAddr(), dest.getNativeObjAddr());
+//            Utils.matToBitmap(frameMat,bitmap);  //准确的话应该每40ms调用完一次
+            Utils.matToBitmap(dest,bitmap);  //准确的话应该每40ms调用完一次
             mMySurfaceView.setBitmapUpdated(true);
+
             //计算两次完成bitmap更新的时间间隔：durationTime_fps
             durationTime_fps= System.currentTimeMillis()-startTime_fps;
             startTime_fps=System.currentTimeMillis();

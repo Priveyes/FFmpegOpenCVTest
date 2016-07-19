@@ -59,7 +59,6 @@ include $(BUILD_SHARED_LIBRARY)
 
 
 include$(CLEAR_VARS)
-OPENCV_LIB_TYPE=STATIC
 include C:/library/OpenCV-android-sdk/sdk/native/jni/OpenCV.mk
 
 LOCAL_MODULE := decodeToMat
@@ -69,5 +68,20 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
 LOCAL_CFLAGS := -D__STDC_CONSTANT_MACROS
 LOCAL_LDLIBS += -llog -lz -ldl
 LOCAL_SHARED_LIBRARIES := avcodec avdevice avfilter avformat avutil postproc swresample swscale
+include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+
+OpenCV_CAMERA_MODULES:=off
+OpenCV_INSTALL_MODULES:=on
+OpenCV_LIB_TYPE:=STATIC
+include C:/library/OpenCV-android-sdk/sdk/native/jni/OpenCV.mk
+
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
+LOCAL_MODULE    := fish_api
+LOCAL_SRC_FILES := fishapi.cpp \
+                   FishEyeCorrect.cpp
+LOCAL_LDLIBS +=  -llog -ldl
+
 include $(BUILD_SHARED_LIBRARY)
 

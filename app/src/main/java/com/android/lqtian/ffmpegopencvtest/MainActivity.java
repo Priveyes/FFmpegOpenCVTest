@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
     MySurfaceView mMySurfaceView;
     Util util;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
